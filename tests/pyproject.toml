@@ -1,0 +1,12 @@
+[project]
+name = "tests"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pytest>=9.0.2",
+    "typed-rest[fastapi,requests]>=0.1.0",
+]
+[tool.uv.sources]
+typed-rest = { workspace = true }
