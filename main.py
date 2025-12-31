@@ -6,12 +6,12 @@ api_impl = ApiImplementation(api_def)
 
 
 @api_impl.handler
-def read_root() -> dict[str, str]:
+def read_root():
     return {"Hello": "World"}
 
 
 @api_impl.handler
-def read_item(item_id: int, q: str | None = None) -> dict[str, int | str | None]:
+def read_item(item_id, q):
     return {"item_id": item_id, "q": q}
 
 

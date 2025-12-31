@@ -35,5 +35,6 @@ def main() -> None:
     except (HTTPError, ValueError):
         pass
 
+
 if __name__ == "__main__":
     main()
