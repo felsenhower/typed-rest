@@ -16,7 +16,7 @@ typed-rest = "typed_rest:main"
 
 [project.optional-dependencies]
 fastapi = [
-    "fastapi>=0.128.0",
+    "fastapi[standard]>=0.128.0",
 ]
 requests = [
     "requests>=2.32.5",
