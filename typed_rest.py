@@ -12,23 +12,9 @@ class Route:
     method: str
     path: str
     name: str
-    annotations: dict[str, type]
-    defaults: tuple | None
-
-
-def uses_kwargs(func):
-    sig = inspect.signature(func)
-    return any(
-        param.kind == inspect.Parameter.VAR_KEYWORD for param in sig.parameters.values()
-    )
-
-
-def uses_args(func):
-    sig = inspect.signature(func)
-    return any(
-        param.kind == inspect.Parameter.VAR_POSITIONAL
-        for param in sig.parameters.values()
-    )
+    signature: inspect.Signature
+    raw_annotations: dict[str, type]
+    raw_defaults: tuple | None
 
 
 class ApiDefinition:
@@ -37,23 +23,33 @@ class ApiDefinition:
 
     def route(self, method: str, path: str):
         def route_decorator(func):
+            EMPTY = inspect.Signature.empty
             name = func.__name__
-            annotations = func.__annotations__
-            defaults = func.__defaults__
-            assert "return" in annotations, f"Unable to add route without return type!"
-            parameter_names = func.__code__.co_varnames
-            assert not uses_kwargs(func), (
-                f"Unable to add route. kwargs is not supported!"
+            if name in self.routes:
+                raise ValueError(f'Unable to add duplicate route "{name}".')
+            signature = inspect.signature(func)
+            parameters = signature.parameters.values()
+            if signature.return_annotation == EMPTY:
+                raise ValueError(
+                    f'Unable to add route "{name}" without a return annotation.'
+                )
+            if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in parameters):
+                raise ValueError(
+                    f'Unable to add route "{name}". **kwargs is not supported.'
+                )
+            if any(p.kind == inspect.Parameter.VAR_POSITIONAL for p in parameters):
+                raise ValueError(
+                    f'Unable to add route "{name}". *args is not supported.'
+                )
+            if sum(1 for p in parameters if p.annotation == EMPTY) > 0:
+                raise ValueError(
+                    f'Unable to add route "{name}". Missing type annotations for parameters {tuple(p.name for p in parameters if p.annotation == EMPTY)}'
+                )
+            raw_annotations = func.__annotations__
+            raw_defaults = func.__defaults__
+            self.routes[name] = Route(
+                method, path, name, signature, raw_annotations, raw_defaults
             )
-            assert not uses_args(func), f"Unable to add route. args is not supported!"
-            parameter_annotations = {
-                name: ptype for (name, ptype) in annotations.items() if name != "return"
-            }
-            assert list(parameter_annotations.keys()) == list(parameter_names), (
-                f"Missing type annotations for parameters {set(parameter_names).difference(parameter_annotations.keys())}."
-            )
-            assert name not in self.routes, f'Duplicate route "{name}"'
-            self.routes[name] = Route(method, path, name, annotations, defaults)
             return func
 
         return route_decorator
@@ -71,65 +67,60 @@ class ApiImplementation:
 
     def handler(self, func):
         name = func.__name__
-        annotations = func.__annotations__
-        assert name not in self.handlers, f'Duplicate handler "{name}"'
-        assert name in self.api_def.routes, (
-            f'Handler "{name}" does not match any defined routes.'
-        )
-        route_def = self.api_def.routes[name]
-        if "return" in annotations:
-            if annotations["return"] != route_def.annotations["return"]:
+        if name in self.handlers:
+            raise ValueError(f'Unable to add duplicate handler "{name}".')
+        if name not in self.api_def.routes:
+            raise ValueError(
+                f'Unable to add handler "{name}". Does not match any defined routes.'
+            )
+        route = self.api_def.routes[name]
+        signature = inspect.signature(func)
+        EMPTY = inspect.Signature.empty
+        assert route.signature.return_annotation != EMPTY
+        if signature.return_annotation != EMPTY:
+            if signature.return_annotation != route.signature.return_annotation:
                 raise ValueError(
-                    f'Return type of handler "{name}" doesn\'t match the corresponding route. Expected "{route_def.annotations["return"]}", but received "{annotations["return"]}".'
+                    f'Unable to add handler "{name}". Return annotation doesn\'t match corresponding route. Expected "{route.signature.return_annotation}", but got "{signature.return_annotation}".'
                 )
-        parameter_annotations = {
-            pname: ptype for (pname, ptype) in annotations.items() if pname != "return"
-        }
-        expected_parameter_annotations = {
-            pname: ptype
-            for (pname, ptype) in route_def.annotations.items()
-            if pname != "return"
-        }
-        assert tuple(func.__code__.co_varnames) == tuple(
-            expected_parameter_annotations.keys()
-        ), (
-            f'Parameters of handler "{name}" don\'t match corresponding route. Exepected {tuple(expected_parameter_annotations.keys())}, but got {tuple(func.__code__.co_varnames)}.'
-        )
-        for pname, ptype in expected_parameter_annotations.items():
-            if pname in parameter_annotations:
-                assert parameter_annotations[pname] == ptype, (
-                    f'Annotations for handler "{name}" don\'t match the corresponding route. Expected: {route_def.annotations}. Received: {annotations}.'
-                )
-        defaults = func.__defaults__ or tuple()
-        expected_defaults = route_def.defaults or tuple()
-        assert len(defaults) <= len(expected_defaults), (
-            f"The handler function has more default parameters than the corresponding route."
-        )
-        for pname, default, exp_default in reversed(
-            list(
-                zip(
-                    reversed(expected_parameter_annotations.keys()),
-                    reversed(defaults),
-                    reversed(expected_defaults),
-                )
-            )
+        parameters = signature.parameters.values()
+        expected_parameters = route.signature.parameters.values()
+        if tuple(p.name for p in parameters) != tuple(
+            p.name for p in expected_parameters
         ):
-            assert default == exp_default, (
-                f'Found incompatible default values for parameter "{pname}". Expected {exp_default}, but got {default}.'
+            raise ValueError(
+                f'Unable to add handler "{name}". Parameter names don\'t match corresponding route. Expected {tuple(p.name for p in expected_parameters)}, but got {tuple(p.name for p in parameters)}.'
             )
-        func.__annotations__ = route_def.annotations
-        func.__defaults__ = route_def.defaults
+        for param, exp_param in zip(parameters, expected_parameters):
+            assert param.name == exp_param.name
+            pname = param.name
+            assert exp_param.annotation != EMPTY
+            if param.annotation != EMPTY:
+                if param.annotation != exp_param.annotation:
+                    raise ValueError(
+                        f'Unable to add handler "{name}". Type annotation of parameter "{pname}" doesn\'t match corresponding route. Expected "{exp_param.annotation}", but got "{param.annotation}".'
+                    )
+            if param.default != EMPTY:
+                if param.default != exp_param.default:
+                    raise ValueError(
+                        f'Unable to add handler "{name}". Default value of parameter "{pname}" doesn\'t match corresponding route. Expected "{exp_param.default}", but got "{param.default}".'
+                    )
+        func.__annotations__ = route.raw_annotations
+        func.__defaults__ = route.raw_defaults
         self.handlers[name] = func
         return func
 
     def make_fastapi(self):
         from fastapi import FastAPI
 
-        assert set(self.api_def.routes.keys()) == set(self.handlers.keys()), (
-            "ApiImplementation is missing handlers for the following routes: {}".format(
-                set(self.api_def.routes.keys()).difference(self.handlers.keys())
+        if set(self.api_def.routes.keys()) != set(self.handlers.keys()):
+            raise ValueError(
+                f"Unable to generate FastAPI app. ApiImplementation is missing handlers for the following routes: {
+                    tuple(
+                        set(self.api_def.routes.keys()).difference(self.handlers.keys())
+                    )
+                }"
             )
-        )
+
         app = FastAPI()
         for name, route_def in self.api_def.routes.items():
             handler = self.handlers[name]
@@ -148,26 +139,27 @@ class ApiClient:
     def make_request_with_requests(self, route: Route, *args, **kwargs):
         import requests
 
+        name = route.name
         path = route.path
-        assert "return" in route.annotations
-        expected_parameters = {
-            pname: ptype
-            for (pname, ptype) in route.annotations.items()
-            if pname != "return"
-        }
+        EMPTY = inspect.Signature.empty
+        assert route.raw_annotations != EMPTY
+        expected_parameters = route.signature.parameters.values()
         if len(args) + len(kwargs) > len(expected_parameters):
             raise ValueError(
-                f"Received too many parameters. Expected {len(expected_parameters)}, but received {len(args) + len(kwargs)}"
+                f'Unable to use accessor for route "{name}". Received too many parameters. Expected {len(expected_parameters)}, but received {len(args) + len(kwargs)}'
             )
-        for pname, value in zip(expected_parameters.keys(), args):
+        for pname, value in zip((p.name for p in expected_parameters), args):
             kwargs.setdefault(pname, value)
-        for (pname, ptype), value in zip(expected_parameters.items(), kwargs.values()):
+
+        for (pname, ptype), value in zip(
+            ((p.name, p.annotation) for p in expected_parameters), kwargs.values()
+        ):
             type_adapter = TypeAdapter(ptype)
             try:
                 _ = type_adapter.validate_python(value)
             except ValidationError as e:
                 raise ValueError(
-                    f'Detected illegal type for parameter "{pname}". Expected {ptype}, but received {value.__class__}'
+                    f'Unable to use accessor for route "{name}". Detected illegal type for parameter "{pname}". Expected "{ptype}", but received "{value.__class__}"'
                 ) from e
         for pname, value in list(kwargs.items()):
             placeholder = "{" + pname + "}"
@@ -183,23 +175,25 @@ class ApiClient:
         )
         response.raise_for_status()
         json = response.json()
-        return_type = route.annotations["return"]
+        return_type = route.signature.return_annotation
         type_adapter = TypeAdapter(return_type)
         return type_adapter.validate_python(json)
 
     def __init__(self, api_def: ApiDefinition, engine: str, base_url: str):
-        assert engine in ApiClientEngine, (
-            f'Unsupported engine "{engine}". Supported engines are '
-            f"{ {str(e) for e in ApiClientEngine} }."
-        )
+        if engine not in ApiClientEngine:
+            raise ValueError(
+                f'Unsupported engine "{engine}". Supported engines are '
+                f"{ {str(e) for e in ApiClientEngine} }."
+            )
         self.api_def = api_def
         self.engine = ApiClientEngine(engine)
         self.base_url = base_url
         for name, route_def in self.api_def.routes.items():
-            assert not hasattr(self, name), (
-                f'Unable to add accessor for route "{name}". '
-                "This should only happen when a route name is already used internally."
-            )
+            if hasattr(self, name):
+                raise ValueError(
+                    f'Unable to add accessor for route "{name}". '
+                    "This should only happen when a route name is already used internally."
+                )
             match self.engine:
                 case ApiClientEngine.REQUESTS:
 
