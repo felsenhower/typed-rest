@@ -157,7 +157,10 @@ class ApiClientEngine(StrEnum):
 
 
 class CommunicationError(IOError):
-    pass
+    def __init__(self, route: Route, **kwargs):
+        super().__init__(
+            f'{self.__class__.__name__} while accessing route "{route.name}" ({kwargs}).'
+        )
 
 
 class NetworkError(CommunicationError):
@@ -228,9 +231,7 @@ class ApiClient:
                     json_data
                 )
             except pydantic.ValidationError as e:
-                raise ValidationError(
-                    f'Validation error while accessing route "{route.name}".'
-                ) from e
+                raise ValidationError(route, path, params) from e
 
         accessor.__signature__ = signature
         setattr(self, route.name, accessor)
@@ -247,20 +248,16 @@ class ApiClient:
                     params=params,
                 )
             except requests.RequestException as e:
-                raise NetworkError(
-                    f'Network error while accessing route "{route.name}".'
-                ) from e
+                raise NetworkError(route, url=url, params=params) from e
             try:
                 response.raise_for_status()
             except requests.RequestException as e:
-                raise HttpError(
-                    f'HTTP error while accessing route "{route.name}".'
-                ) from e
+                raise HttpError(route, url=url, params=params, response=response) from e
             try:
                 return response.json()
             except requests.RequestException as e:
                 raise DecodeError(
-                    f'Decode error while accessing route "{route.name}".'
+                    route, url=url, params=params, response=response
                 ) from e
 
         self._add_accessor(route, transport)
@@ -278,22 +275,18 @@ class ApiClient:
                     params=params,
                 )
             except httpx.HTTPError as e:
-                raise NetworkError(
-                    f'Network error while accessing route "{route.name}".'
-                ) from e
+                raise NetworkError(route, url=url, params=params) from e
 
             try:
                 response.raise_for_status()
             except httpx.HTTPError as e:
-                raise HttpError(
-                    f'HTTP error while accessing route "{route.name}".'
-                ) from e
+                raise HttpError(route, url=url, params=params, response=response) from e
 
             try:
                 return response.json()
             except json.JSONDecodeError as e:
                 raise DecodeError(
-                    f'Decode error while accessing route "{route.name}".'
+                    route, url=url, params=params, response=response
                 ) from e
 
         self._add_accessor(route, transport)
