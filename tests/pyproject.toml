@@ -10,3 +10,9 @@ dependencies = [
 ]
 [tool.uv.sources]
 typed-rest = { workspace = true }
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:websockets\\.legacy is deprecated:DeprecationWarning",
+    "ignore:websockets\\.server\\.WebSocketServerProtocol is deprecated:DeprecationWarning",
+]
