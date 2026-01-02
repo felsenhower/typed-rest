@@ -17,8 +17,7 @@ def test_client_simple():
     api_def = ApiDefinition()
 
     @api_def.get("/")
-    def simple_route() -> dict[str, str]:
-        pass
+    def simple_route() -> dict[str, str]: ...
 
     api_impl = ApiImplementation(api_def)
 
@@ -36,8 +35,7 @@ def test_client_with_arg():
     api_def = ApiDefinition()
 
     @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, int]:
-        pass
+    def route_with_arg(item_id: int) -> dict[str, int]: ...
 
     api_impl = ApiImplementation(api_def)
 
@@ -57,8 +55,7 @@ def test_client_with_arg():
     @api_def.get("/items/{item_id}")
     def route_with_optional_arg(
         item_id: int, q: str | None = None
-    ) -> dict[str, int | str | None]:
-        pass
+    ) -> dict[str, int | str | None]: ...
 
     api_impl = ApiImplementation(api_def)
 
@@ -81,8 +78,9 @@ def test_client_with_optional_arg():
     api_def = ApiDefinition()
 
     @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(item_id: int, q: str | None = None) -> ExampleResult:
-        pass
+    def route_with_optional_arg(
+        item_id: int, q: str | None = None
+    ) -> ExampleResult: ...
 
     api_impl = ApiImplementation(api_def)
 
@@ -100,8 +98,7 @@ def test_client_network_error():
     api_def = ApiDefinition()
 
     @api_def.get("/")
-    def simple_route() -> dict[str, str]:
-        pass
+    def simple_route() -> dict[str, str]: ...
 
     app = fastapi.FastAPI()
 
@@ -114,8 +111,7 @@ def test_client_decode_error():
     api_def = ApiDefinition()
 
     @api_def.get("/")
-    def simple_route() -> dict[str, str]:
-        pass
+    def simple_route() -> dict[str, str]: ...
 
     app = fastapi.FastAPI()
 

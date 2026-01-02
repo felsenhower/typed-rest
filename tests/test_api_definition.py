@@ -9,16 +9,15 @@ def test_add_simple_routes():
     api_def = ApiDefinition()
 
     @api_def.get("/")
-    def simple_route() -> dict[str, str]:
-        pass
+    def simple_route() -> dict[str, str]: ...
 
     @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, str]:
-        pass
+    def route_with_arg(item_id: int) -> dict[str, str]: ...
 
     @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(item_id: int, q: str | None = None) -> dict[str, str]:
-        pass
+    def route_with_optional_arg(
+        item_id: int, q: str | None = None
+    ) -> dict[str, str]: ...
 
 
 class ExampleResult(BaseModel):
@@ -30,8 +29,9 @@ def test_add_basemodel_route():
     api_def = ApiDefinition()
 
     @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(item_id: int, q: str | None = None) -> ExampleResult:
-        pass
+    def route_with_optional_arg(
+        item_id: int, q: str | None = None
+    ) -> ExampleResult: ...
 
 
 def test_detect_missing_return_annotation():
@@ -39,8 +39,7 @@ def test_detect_missing_return_annotation():
     with pytest.raises(ValueError):
 
         @api_def.get("/")
-        def simple_route():
-            pass
+        def simple_route(): ...
 
 
 def test_detect_missing_type_annotation():
@@ -48,8 +47,7 @@ def test_detect_missing_type_annotation():
     with pytest.raises(ValueError):
 
         @api_def.get("/")
-        def route_with_arg(item_id: int, q) -> dict[str, str]:
-            pass
+        def route_with_arg(item_id: int, q) -> dict[str, str]: ...
 
 
 def test_detect_kwargs():
@@ -57,8 +55,7 @@ def test_detect_kwargs():
     with pytest.raises(ValueError):
 
         @api_def.get("/")
-        def kwargs_route(**kwargs) -> dict[str, str]:
-            pass
+        def kwargs_route(**kwargs) -> dict[str, str]: ...
 
 
 def test_detect_args():
@@ -66,8 +63,7 @@ def test_detect_args():
     with pytest.raises(ValueError):
 
         @api_def.get("/")
-        def args_route(*args) -> dict[str, str]:
-            pass
+        def args_route(*args) -> dict[str, str]: ...
 
 
 def test_detect_invalid_parameter_annotation():
@@ -75,8 +71,7 @@ def test_detect_invalid_parameter_annotation():
     with pytest.raises(ValueError):
 
         @api_def.get("/")
-        def route_with_arg(x: any) -> dict[str, str]:
-            pass
+        def route_with_arg(x: any) -> dict[str, str]: ...
 
 
 def test_detect_invalid_return_annotation():
@@ -84,5 +79,4 @@ def test_detect_invalid_return_annotation():
     with pytest.raises(ValueError):
 
         @api_def.get("/")
-        def simple_route(**kwargs) -> dict[str, any]:
-            pass
+        def simple_route(**kwargs) -> dict[str, any]: ...

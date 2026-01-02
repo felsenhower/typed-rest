@@ -9,8 +9,7 @@ def test_network_error():
     api_def = ApiDefinition()
 
     @api_def.get("/")
-    def simple_route() -> dict[str, str]:
-        pass
+    def simple_route() -> dict[str, str]: ...
 
     api_impl = ApiImplementation(api_def)
 
