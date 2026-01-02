@@ -4,6 +4,7 @@ from typing import assert_never
 import pydantic
 from pydantic import TypeAdapter
 import inspect
+from collections.abc import Callable
 
 
 @dataclass
@@ -83,7 +84,7 @@ class ApiImplementation:
         from fastapi import FastAPI  # noqa # pylint: disable=unused-import
 
         self.api_def = api_def
-        self.handlers = dict()
+        self.handlers: dict[str, Callable] = dict()
 
     def handler(self, func):
         name = func.__name__
@@ -147,7 +148,13 @@ class ApiImplementation:
             route_def = self.api_def.routes[name]
             path = route_def.path
             method = route_def.method
-            app.add_api_route(path, endpoint=handler, methods=(method,))
+            app.add_api_route(
+                path,
+                endpoint=handler,
+                methods=[
+                    method,
+                ],
+            )
         return app
 
 
@@ -198,7 +205,9 @@ class ApiClient:
         assert dummy is not None and callable(dummy)
         return inspect.signature(dummy)
 
-    def _add_accessor(self, route: Route, transport):
+    def _add_accessor(
+        self, route: Route, transport: Callable[[str, str, dict | None], object]
+    ):
         signature = route.signature
 
         def accessor(*args, **kwargs):
@@ -231,7 +240,7 @@ class ApiClient:
                     json_data
                 )
             except pydantic.ValidationError as e:
-                raise ValidationError(route, path, params) from e
+                raise ValidationError(route, path=path, params=params) from e
 
         accessor.__signature__ = signature
         setattr(self, route.name, accessor)
