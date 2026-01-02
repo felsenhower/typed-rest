@@ -5,6 +5,7 @@ import pydantic
 from pydantic import TypeAdapter
 import inspect
 from collections.abc import Callable
+import re
 
 
 @dataclass
@@ -30,7 +31,7 @@ class ApiDefinition:
         self.routes: dict[str, Route] = dict()
 
     def route(self, method: str, path: str):
-        SUPPORTED_METHODS = {"GET"}
+        SUPPORTED_METHODS = {"DELETE", "GET", "PATCH", "POST", "PUT"}
         if method not in SUPPORTED_METHODS:
             raise ValueError(
                 f'Unable to add route "{name}". Method "{method}" is not supported. Supported methods are {SUPPORTED_METHODS}.'
@@ -47,6 +48,11 @@ class ApiDefinition:
                 raise ValueError(f'Unable to add duplicate route "{name}".')
             signature = inspect.signature(func)
             parameters = signature.parameters.values()
+            path_param_names = set(re.findall(r"\{(.+?)\}", path))
+            if not path_param_names.issubset(p.name for p in parameters):
+                raise ValueError(
+                    f'Unable to add route "{name}". Parameters {path_param_names.difference(p.name for p in parameters)} are in path, but not in parameters.'
+                )
             if signature.return_annotation == EMPTY:
                 raise ValueError(
                     f'Unable to add route "{name}" without a return annotation.'
@@ -85,8 +91,20 @@ class ApiDefinition:
 
         return route_decorator
 
+    def delete(self, path: str):
+        return self.route(method="DELETE", path=path)
+
     def get(self, path: str):
         return self.route(method="GET", path=path)
+
+    def patch(self, path: str):
+        return self.route(method="PATCH", path=path)
+
+    def post(self, path: str):
+        return self.route(method="POST", path=path)
+
+    def put(self, path: str):
+        return self.route(method="PUT", path=path)
 
 
 class ApiImplementation:
@@ -181,20 +199,16 @@ class CommunicationError(IOError):
         )
 
 
-class NetworkError(CommunicationError):
-    pass
+class NetworkError(CommunicationError): ...
 
 
-class HttpError(CommunicationError):
-    pass
+class HttpError(CommunicationError): ...
 
 
-class DecodeError(CommunicationError):
-    pass
+class DecodeError(CommunicationError): ...
 
 
-class ValidationError(CommunicationError):
-    pass
+class ValidationError(CommunicationError): ...
 
 
 TransportFunction = Callable[[str, str, dict | None], object]
