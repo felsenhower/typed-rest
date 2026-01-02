@@ -1,8 +1,16 @@
 import pytest
 
-from typed_rest import ApiDefinition, ApiImplementation, ApiClient
+from typed_rest import (
+    ApiDefinition,
+    ApiImplementation,
+    ApiClient,
+    HttpError,
+    DecodeError,
+)
 
 from pydantic import BaseModel
+
+import fastapi
 
 
 def test_client_simple():
@@ -86,3 +94,35 @@ def test_client_with_optional_arg():
     api_client = ApiClient(api_def, engine="testclient", app=app)
     result = api_client.route_with_optional_arg(item_id=42, q="Foo")
     assert ExampleResult(item_id=42, q="Foo")
+
+
+def test_client_network_error():
+    api_def = ApiDefinition()
+
+    @api_def.get("/")
+    def simple_route() -> dict[str, str]:
+        pass
+
+    app = fastapi.FastAPI()
+
+    api_client = ApiClient(api_def, engine="testclient", app=app)
+    with pytest.raises(HttpError):
+        _ = api_client.simple_route()
+
+
+def test_client_decode_error():
+    api_def = ApiDefinition()
+
+    @api_def.get("/")
+    def simple_route() -> dict[str, str]:
+        pass
+
+    app = fastapi.FastAPI()
+
+    @app.get("/")
+    def simple_route():
+        return fastapi.Response(content="this is not json", media_type="text/plain")
+
+    api_client = ApiClient(api_def, engine="testclient", app=app)
+    with pytest.raises(DecodeError):
+        _ = api_client.simple_route()

@@ -26,4 +26,4 @@ def test_network_error():
         base_url="http://example.org/hopefully/there/is/no/api/here",
     )
     with pytest.raises(HttpError):
-        result = api_client.simple_route()
+        _ = api_client.simple_route()
