@@ -14,16 +14,26 @@ from typed_rest import (
 
 
 def test_client_simple():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    api_impl = ApiImplementation(api_def)
+        return api_def
 
-    @api_impl.handler
-    def simple_route():
-        return {"Hello": "World"}
+    api_def = make_def()
+
+    def make_impl(api_def):
+        api_impl = ApiImplementation(api_def)
+
+        @api_impl.handler
+        def simple_route():
+            return {"Hello": "World"}
+
+        return api_impl
+
+    api_impl = make_impl(api_def)
 
     app = api_impl.make_fastapi()
     api_client = ApiClient(api_def, engine="testclient", app=app)
@@ -32,16 +42,26 @@ def test_client_simple():
 
 
 def test_client_with_arg():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, int]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_arg(item_id: int) -> dict[str, int]: ...
 
-    api_impl = ApiImplementation(api_def)
+        return api_def
 
-    @api_impl.handler
-    def route_with_arg(item_id):
-        return {"item_id": item_id}
+    api_def = make_def()
+
+    def make_impl(api_def):
+        api_impl = ApiImplementation(api_def)
+
+        @api_impl.handler
+        def route_with_arg(item_id):
+            return {"item_id": item_id}
+
+        return api_impl
+
+    api_impl = make_impl(api_def)
 
     app = api_impl.make_fastapi()
     api_client = ApiClient(api_def, engine="testclient", app=app)
@@ -49,19 +69,29 @@ def test_client_with_arg():
     assert result == {"item_id": 42}
 
 
-def test_client_with_arg():
-    api_def = ApiDefinition()
+def test_client_with_optional_arg():
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(
-        item_id: int, q: Annotated[str | None, Query()] = None
-    ) -> dict[str, Any]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_optional_arg(
+            item_id: int, q: Annotated[str | None, Query()] = None
+        ) -> dict[str, Any]: ...
 
-    api_impl = ApiImplementation(api_def)
+        return api_def
 
-    @api_impl.handler
-    def route_with_optional_arg(item_id, q):
-        return {"item_id": item_id, "q": q}
+    api_def = make_def()
+
+    def make_impl(api_def):
+        api_impl = ApiImplementation(api_def)
+
+        @api_impl.handler
+        def route_with_optional_arg(item_id, q):
+            return {"item_id": item_id, "q": q}
+
+        return api_impl
+
+    api_impl = make_impl(api_def)
 
     app = api_impl.make_fastapi()
     api_client = ApiClient(api_def, engine="testclient", app=app)
@@ -74,65 +104,85 @@ class ExampleResult(BaseModel):
     q: str | None
 
 
-def test_client_with_optional_arg():
-    api_def = ApiDefinition()
+def test_client_with_optional_arg_basemodel():
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(
-        item_id: int, q: Annotated[str | None, Query()] = None
-    ) -> ExampleResult: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_optional_arg(
+            item_id: int, q: Annotated[str | None, Query()] = None
+        ) -> ExampleResult: ...
 
-    api_impl = ApiImplementation(api_def)
+        return api_def
 
-    @api_impl.handler
-    def route_with_optional_arg(item_id, q):
-        return ExampleResult(item_id=item_id, q=q)
+    api_def = make_def()
+
+    def make_impl(api_def):
+        api_impl = ApiImplementation(api_def)
+
+        @api_impl.handler
+        def route_with_optional_arg(item_id, q):
+            return ExampleResult(item_id=item_id, q=q)
+
+        return api_impl
+
+    api_impl = make_impl(api_def)
 
     app = api_impl.make_fastapi()
     api_client = ApiClient(api_def, engine="testclient", app=app)
     result = api_client.route_with_optional_arg(item_id=42, q="Foo")
-    assert ExampleResult(item_id=42, q="Foo")
+    assert result == ExampleResult(item_id=42, q="Foo")
 
 
 def test_client_simple_http_methods():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.delete("/")
-    def delete_route() -> dict[str, str]: ...
+        @api_def.delete("/")
+        def delete_route() -> dict[str, str]: ...
 
-    @api_def.get("/")
-    def get_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def get_route() -> dict[str, str]: ...
 
-    @api_def.patch("/")
-    def patch_route() -> dict[str, str]: ...
+        @api_def.patch("/")
+        def patch_route() -> dict[str, str]: ...
 
-    @api_def.post("/")
-    def post_route() -> dict[str, str]: ...
+        @api_def.post("/")
+        def post_route() -> dict[str, str]: ...
 
-    @api_def.put("/")
-    def put_route() -> dict[str, str]: ...
+        @api_def.put("/")
+        def put_route() -> dict[str, str]: ...
 
-    api_impl = ApiImplementation(api_def)
+        return api_def
 
-    @api_impl.handler
-    def delete_route():
-        return {"Hello": "World"}
+    api_def = make_def()
 
-    @api_impl.handler
-    def get_route():
-        return {"Hello": "World"}
+    def make_impl(api_def):
+        api_impl = ApiImplementation(api_def)
 
-    @api_impl.handler
-    def patch_route():
-        return {"Hello": "World"}
+        @api_impl.handler
+        def delete_route():
+            return {"Hello": "World"}
 
-    @api_impl.handler
-    def post_route():
-        return {"Hello": "World"}
+        @api_impl.handler
+        def get_route():
+            return {"Hello": "World"}
 
-    @api_impl.handler
-    def put_route():
-        return {"Hello": "World"}
+        @api_impl.handler
+        def patch_route():
+            return {"Hello": "World"}
+
+        @api_impl.handler
+        def post_route():
+            return {"Hello": "World"}
+
+        @api_impl.handler
+        def put_route():
+            return {"Hello": "World"}
+
+        return api_impl
+
+    api_impl = make_impl(api_def)
 
     app = api_impl.make_fastapi()
     api_client = ApiClient(api_def, engine="testclient", app=app)
@@ -149,10 +199,15 @@ def test_client_simple_http_methods():
 
 
 def test_client_network_error():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     app = fastapi.FastAPI()
 
@@ -162,10 +217,15 @@ def test_client_network_error():
 
 
 def test_client_decode_error():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     app = fastapi.FastAPI()
 

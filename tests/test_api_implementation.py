@@ -5,18 +5,23 @@ from typed_rest import ApiDefinition, ApiImplementation, Query
 
 
 def test_add_simple_handlers():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, int]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_arg(item_id: int) -> dict[str, int]: ...
 
-    @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(
-        item_id: int, q: Annotated[str | None, Query()] = None
-    ) -> dict[str, Any]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_optional_arg(
+            item_id: int, q: Annotated[str | None, Query()] = None
+        ) -> dict[str, Any]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
 
@@ -34,10 +39,15 @@ def test_add_simple_handlers():
 
 
 def test_detect_non_matching_handler():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
     with pytest.raises(ValueError):
@@ -48,10 +58,15 @@ def test_detect_non_matching_handler():
 
 
 def test_add_duplicate_handler():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
 
@@ -67,18 +82,23 @@ def test_add_duplicate_handler():
 
 
 def test_add_simple_handlers_with_annotation():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, int]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_arg(item_id: int) -> dict[str, int]: ...
 
-    @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(
-        item_id: int, q: Annotated[str | None, Query()] = None
-    ) -> dict[str, str | int | None]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_optional_arg(
+            item_id: int, q: Annotated[str | None, Query()] = None
+        ) -> dict[str, str | int | None]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
 
@@ -98,13 +118,18 @@ def test_add_simple_handlers_with_annotation():
 
 
 def test_detect_incorrect_annotation():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, int]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_arg(item_id: int) -> dict[str, int]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
     with pytest.raises(ValueError):
@@ -121,12 +146,17 @@ def test_detect_incorrect_annotation():
 
 
 def test_detect_incorrect_default():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(
-        item_id: int, q: Annotated[str | None, Query()] = None
-    ) -> dict[str, Any]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_optional_arg(
+            item_id: int, q: Annotated[str | None, Query()] = None
+        ) -> dict[str, Any]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
     with pytest.raises(ValueError):
@@ -137,10 +167,15 @@ def test_detect_incorrect_default():
 
 
 def test_detect_incorrect_parameter_name():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, int]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_arg(item_id: int) -> dict[str, int]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
     with pytest.raises(ValueError):
@@ -151,18 +186,23 @@ def test_detect_incorrect_parameter_name():
 
 
 def test_make_fastapi():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, str]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_arg(item_id: int) -> dict[str, str]: ...
 
-    @api_def.get("/items/{item_id}")
-    def route_with_optional_arg(
-        item_id: int, q: Annotated[str | None, Query()] = None
-    ) -> dict[str, str]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_optional_arg(
+            item_id: int, q: Annotated[str | None, Query()] = None
+        ) -> dict[str, str]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
 
@@ -182,13 +222,18 @@ def test_make_fastapi():
 
 
 def test_detect_missing_handlers():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    @api_def.get("/items/{item_id}")
-    def route_with_arg(item_id: int) -> dict[str, str]: ...
+        @api_def.get("/items/{item_id}")
+        def route_with_arg(item_id: int) -> dict[str, str]: ...
+
+        return api_def
+
+    api_def = make_def()
 
     api_impl = ApiImplementation(api_def)
 

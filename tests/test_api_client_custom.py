@@ -1,4 +1,3 @@
-
 import fastapi
 import fastapi.testclient
 from typed_rest import (
@@ -9,16 +8,26 @@ from typed_rest import (
 
 
 def test_client_simple():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    api_impl = ApiImplementation(api_def)
+        return api_def
 
-    @api_impl.handler
-    def simple_route():
-        return {"Hello": "World"}
+    api_def = make_def()
+
+    def make_impl(api_def):
+        api_impl = ApiImplementation(api_def)
+
+        @api_impl.handler
+        def simple_route():
+            return {"Hello": "World"}
+
+        return api_impl
+
+    api_impl = make_impl(api_def)
 
     app = api_impl.make_fastapi()
 

@@ -3,16 +3,26 @@ from typed_rest import ApiClient, ApiDefinition, ApiImplementation, HttpError
 
 
 def test_client_simple_requests(fastapi_server):
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    api_impl = ApiImplementation(api_def)
+        return api_def
 
-    @api_impl.handler
-    def simple_route():
-        return {"Hello": "World"}
+    api_def = make_def()
+
+    def make_impl(api_def):
+        api_impl = ApiImplementation(api_def)
+
+        @api_impl.handler
+        def simple_route():
+            return {"Hello": "World"}
+
+        return api_impl
+
+    api_impl = make_impl(api_def)
 
     app = api_impl.make_fastapi()
     with fastapi_server(app) as base_url:
@@ -26,18 +36,28 @@ def test_client_simple_requests(fastapi_server):
 
 
 def test_network_error():
-    api_def = ApiDefinition()
+    def make_def():
+        api_def = ApiDefinition()
 
-    @api_def.get("/")
-    def simple_route() -> dict[str, str]: ...
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
 
-    api_impl = ApiImplementation(api_def)
+        return api_def
 
-    @api_impl.handler
-    def simple_route():
-        return {"Hello": "World"}
+    api_def = make_def()
 
-    app = api_impl.make_fastapi()
+    def make_impl():
+        api_impl = ApiImplementation(api_def)
+
+        @api_impl.handler
+        def simple_route():
+            return {"Hello": "World"}
+
+        return api_impl
+
+    api_impl = make_impl(api_def)
+
+    _ = api_impl.make_fastapi()
 
     api_client = ApiClient(
         api_def,
