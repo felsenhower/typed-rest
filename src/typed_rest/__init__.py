@@ -76,21 +76,20 @@ class ApiDefinition:
         self.routes: dict[str, Route] = dict()
 
     def route(self, method: str, path: str):
-        SUPPORTED_METHODS = {"DELETE", "GET", "PATCH", "POST", "PUT"}
-        if method not in SUPPORTED_METHODS:
-            raise ValueError(
-                f'Unable to add route "{name}". Method "{method}" is not supported. Supported methods are {SUPPORTED_METHODS}.'
-            )
-        if not path.startswith("/"):
-            raise ValueError(
-                f'Unable to add route "{name}". Path "{path}" does not start with "/".'
-            )
-
         def route_decorator(func):
             EMPTY = inspect.Signature.empty
             name = func.__name__
             if name in self.routes:
                 raise ValueError(f'Unable to add duplicate route "{name}".')
+            SUPPORTED_METHODS = {"DELETE", "GET", "PATCH", "POST", "PUT"}
+            if method not in SUPPORTED_METHODS:
+                raise ValueError(
+                    f'Unable to add route "{name}". Method "{method}" is not supported. Supported methods are {SUPPORTED_METHODS}.'
+                )
+            if not path.startswith("/"):
+                raise ValueError(
+                    f'Unable to add route "{name}". Path "{path}" does not start with "/".'
+                )
             signature = inspect.signature(func)
             parameters = signature.parameters.values()
             path_param_names = set(re.findall(r"\{(.+?)\}", path))
