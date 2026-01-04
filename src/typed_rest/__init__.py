@@ -176,6 +176,17 @@ class ApiDefinition:
                     f'Unable to add route "{name}". Annotations of parameters {tuple(p.name for p in parameters if not is_valid_pydantic_type(p.annotation))} cannot be converted to pydantic schemas.'
                 )
             request_params = get_request_params(path, parameters)
+
+            METHODS_SUPPORTING_BODY = {"PATCH", "POST", "PUT"}
+            if method not in METHODS_SUPPORTING_BODY:
+                if (
+                    sum(1 for (_, a) in request_params.items() if isinstance(a, Body))
+                    > 0
+                ):
+                    raise ValueError(
+                        f'Unable to add route "{name}". Request bodies are only support for methods {METHODS_SUPPORTING_BODY}.'
+                    )
+
             raw_annotations = func.__annotations__
             raw_defaults = func.__defaults__
             self.routes[name] = Route(
