@@ -443,7 +443,9 @@ class ApiClient:
 
             case ApiClientEngine.CUSTOM:
 
-                def dummy(*, transport: TransportFunction) -> None: ...
+                def dummy(
+                    *, transport: TransportFunction, is_async: bool | None = None
+                ) -> None: ...
 
             case _:
                 assert_never(engine)
@@ -648,7 +650,7 @@ class ApiClient:
         self._add_accessor(route, transport)
 
     def _add_accessor_with_custom(self, route: Route):
-        self._add_accessor(route, self.transport)
+        self._add_accessor(route, self.transport, self.is_async)
 
     def __init__(self, api_def: ApiDefinition, engine: str, **kwargs):
         if engine not in ApiClientEngine:
@@ -678,6 +680,7 @@ class ApiClient:
 
             case ApiClientEngine.CUSTOM:
                 self.transport = bound.arguments["transport"]
+                self.is_async = bound.arguments["is_async"]
 
             case _:
                 assert_never(self.engine)
