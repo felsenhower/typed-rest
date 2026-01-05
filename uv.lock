@@ -1104,6 +1104,9 @@ aiohttp = [
 fastapi = [
     { name = "fastapi", extra = ["standard"] },
 ]
+httpx = [
+    { name = "httpx" },
+]
 requests = [
     { name = "requests" },
 ]
@@ -1112,10 +1115,11 @@ requests = [
 requires-dist = [
     { name = "aiohttp", marker = "extra == 'aiohttp'", specifier = ">=3.13.3" },
     { name = "fastapi", extras = ["standard"], marker = "extra == 'fastapi'", specifier = ">=0.128.0" },
+    { name = "httpx", marker = "extra == 'httpx'", specifier = ">=0.28.1" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "requests", marker = "extra == 'requests'", specifier = ">=2.32.5" },
 ]
-provides-extras = ["fastapi", "requests", "aiohttp"]
+provides-extras = ["fastapi", "requests", "aiohttp", "httpx"]
 
 [[package]]
 name = "typed-rest-example-requests"

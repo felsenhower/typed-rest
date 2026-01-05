@@ -392,6 +392,7 @@ class ApiImplementation:
 
 class ApiClientEngine(StrEnum):
     AIOHTTP = "aiohttp"
+    HTTPX = "httpx"
     REQUESTS = "requests"
     TESTCLIENT = "testclient"
     CUSTOM = "custom"
@@ -437,6 +438,10 @@ class ApiClient:
                 import aiohttp
 
                 def dummy(*, base_url: str, session: aiohttp.ClientSession) -> None: ...
+
+            case ApiClientEngine.HTTPX:
+
+                def dummy(*, base_url: str) -> None: ...
 
             case ApiClientEngine.REQUESTS:
 
@@ -589,6 +594,63 @@ class ApiClient:
 
         self._add_accessor(route, transport, is_async=True)
 
+    def _add_accessor_with_httpx(self, route: Route):
+        import json
+
+        import httpx
+
+        def transport(
+            request: Request,
+        ):
+            method = request.method
+            path = request.path
+            query_params = request.query_params
+            body = request.body
+            headers = request.headers
+            url = self.base_url.rstrip("/") + path
+            try:
+                response = httpx.request(
+                    method=method,
+                    url=url,
+                    params=query_params,
+                    json=body,
+                    headers=headers,
+                )
+            except httpx.HTTPError as e:
+                raise NetworkError(
+                    route,
+                    url=url,
+                    query_params=query_params,
+                    body=body,
+                    headers=headers,
+                ) from e
+
+            try:
+                response.raise_for_status()
+            except httpx.HTTPError as e:
+                raise HttpError(
+                    route,
+                    url=url,
+                    query_params=query_params,
+                    body=body,
+                    headers=headers,
+                    response=response,
+                ) from e
+
+            try:
+                return response.json()
+            except json.JSONDecodeError as e:
+                raise DecodeError(
+                    route,
+                    url=url,
+                    query_params=query_params,
+                    body=body,
+                    headers=headers,
+                    response=response,
+                ) from e
+
+        self._add_accessor(route, transport, is_async=False)
+
     def _add_accessor_with_requests(self, route: Route):
         import requests
 
@@ -725,6 +787,9 @@ class ApiClient:
                 self.base_url = bound.arguments["base_url"]
                 self.session = bound.arguments["session"]
 
+            case ApiClientEngine.HTTPX:
+                self.base_url = bound.arguments["base_url"]
+
             case ApiClientEngine.REQUESTS:
                 self.base_url = bound.arguments["base_url"]
 
@@ -749,6 +814,8 @@ class ApiClient:
             match self.engine:
                 case ApiClientEngine.AIOHTTP:
                     self._add_accessor_with_aiohttp(route)
+                case ApiClientEngine.HTTPX:
+                    self._add_accessor_with_httpx(route)
                 case ApiClientEngine.REQUESTS:
                     self._add_accessor_with_requests(route)
                 case ApiClientEngine.TESTCLIENT:

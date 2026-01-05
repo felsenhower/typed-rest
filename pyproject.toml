@@ -24,6 +24,9 @@ requests = [
 aiohttp = [
     "aiohttp>=3.13.3",
 ]
+httpx = [
+    "httpx>=0.28.1",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]
