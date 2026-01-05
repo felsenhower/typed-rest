@@ -391,6 +391,7 @@ class ApiImplementation:
 
 
 class ApiClientEngine(StrEnum):
+    AIOHTTP = "aiohttp"
     REQUESTS = "requests"
     TESTCLIENT = "testclient"
     CUSTOM = "custom"
@@ -432,6 +433,11 @@ class ApiClient:
     def _get_init_signature(engine: ApiClientEngine):
         dummy = None
         match engine:
+            case ApiClientEngine.AIOHTTP:
+                import aiohttp
+
+                def dummy(*, base_url: str, session: aiohttp.ClientSession) -> None: ...
+
             case ApiClientEngine.REQUESTS:
 
                 def dummy(*, base_url: str) -> None: ...
@@ -537,6 +543,52 @@ class ApiClient:
 
         setattr(self, route.name, accessor)
 
+    def _add_accessor_with_aiohttp(self, route: Route):
+        import aiohttp
+
+        async def transport(
+            request: Request,
+        ):
+            try:
+                url = self.base_url.rstrip("/") + route.path
+                async with self.session.request(
+                    method=request.method,
+                    url=url,
+                    params=request.query_params,
+                    json=request.body,
+                    headers=request.headers,
+                    raise_for_status=True,
+                ) as response:
+                    try:
+                        return await response.json()
+                    except Exception as e:
+                        raise DecodeError(
+                            route,
+                            url=url,
+                            query_params=request.query_params,
+                            body=request.body,
+                            headers=request.headers,
+                            response=response,
+                        ) from e
+            except aiohttp.ClientConnectionError as e:
+                raise NetworkError(
+                    route,
+                    url=url,
+                    query_params=request.query_params,
+                    body=request.body,
+                    headers=request.headers,
+                ) from e
+            except aiohttp.ClientResponseError as e:
+                raise HttpError(
+                    route,
+                    url=url,
+                    query_params=request.query_params,
+                    body=request.body,
+                    headers=request.headers,
+                ) from e
+
+        self._add_accessor(route, transport, is_async=True)
+
     def _add_accessor_with_requests(self, route: Route):
         import requests
 
@@ -590,7 +642,7 @@ class ApiClient:
                     response=response,
                 ) from e
 
-        self._add_accessor(route, transport)
+        self._add_accessor(route, transport, is_async=False)
 
     def _add_accessor_with_testclient(self, route: Route):
         import json
@@ -647,7 +699,7 @@ class ApiClient:
                     response=response,
                 ) from e
 
-        self._add_accessor(route, transport)
+        self._add_accessor(route, transport, is_async=False)
 
     def _add_accessor_with_custom(self, route: Route):
         self._add_accessor(route, self.transport, self.is_async)
@@ -669,6 +721,10 @@ class ApiClient:
             ) from e
         bound.apply_defaults()
         match self.engine:
+            case ApiClientEngine.AIOHTTP:
+                self.base_url = bound.arguments["base_url"]
+                self.session = bound.arguments["session"]
+
             case ApiClientEngine.REQUESTS:
                 self.base_url = bound.arguments["base_url"]
 
@@ -691,6 +747,8 @@ class ApiClient:
                     "Name conflicts with ApiClient internals."
                 )
             match self.engine:
+                case ApiClientEngine.AIOHTTP:
+                    self._add_accessor_with_aiohttp(route)
                 case ApiClientEngine.REQUESTS:
                     self._add_accessor_with_requests(route)
                 case ApiClientEngine.TESTCLIENT:

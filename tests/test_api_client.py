@@ -11,6 +11,7 @@ from typed_rest import (
     DecodeError,
     HttpError,
     Query,
+    ValidationError,
 )
 
 
@@ -236,7 +237,7 @@ def test_client_simple_http_methods():
     assert result == {"Hello": "World"}
 
 
-def test_client_network_error():
+def test_client_http_error():
     def make_def():
         api_def = ApiDefinition()
 
@@ -248,6 +249,12 @@ def test_client_network_error():
     api_def = make_def()
 
     app = fastapi.FastAPI()
+
+    @app.get("/")
+    def simple_route():
+        return fastapi.responses.JSONResponse(
+            content={"Hello": "World"}, status_code=400
+        )
 
     api_client = ApiClient(api_def, engine="testclient", app=app)
     with pytest.raises(HttpError):
@@ -273,4 +280,26 @@ def test_client_decode_error():
 
     api_client = ApiClient(api_def, engine="testclient", app=app)
     with pytest.raises(DecodeError):
+        _ = api_client.simple_route()
+
+
+def test_client_validation_error():
+    def make_def():
+        api_def = ApiDefinition()
+
+        @api_def.get("/")
+        def simple_route() -> dict[str, str]: ...
+
+        return api_def
+
+    api_def = make_def()
+
+    app = fastapi.FastAPI()
+
+    @app.get("/")
+    def simple_route():
+        return fastapi.responses.JSONResponse(content={"Hello": 42})
+
+    api_client = ApiClient(api_def, engine="testclient", app=app)
+    with pytest.raises(ValidationError):
         _ = api_client.simple_route()

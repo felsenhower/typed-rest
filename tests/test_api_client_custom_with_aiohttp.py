@@ -47,6 +47,7 @@ async def test_client_simple(fastapi_server):
                     params=request.query_params,
                     json=request.body,
                     headers=request.headers,
+                    raise_for_status=True,
                 ) as response:
                     return await response.json()
 
