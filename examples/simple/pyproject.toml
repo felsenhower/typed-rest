@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "typed-rest[fastapi,requests]>=0.1.0",
+    "typed-rest[fastapi,requests,aiohttp,httpx,urllib3]>=0.1.0",
 ]
 
 [tool.uv.sources]

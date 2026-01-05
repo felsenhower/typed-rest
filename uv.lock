@@ -4,10 +4,10 @@ requires-python = ">=3.13"
 
 [manifest]
 members = [
-    "mimas-pyscript-ltk-test",
     "tests",
     "typed-rest",
     "typed-rest-example-simple",
+    "typed-rest-example-webapp",
 ]
 
 [[package]]
@@ -586,17 +586,6 @@ wheels = [
 ]
 
 [[package]]
-name = "mimas-pyscript-ltk-test"
-version = "0.1.0"
-source = { virtual = "examples/browser" }
-dependencies = [
-    { name = "typed-rest", extra = ["fastapi"] },
-]
-
-[package.metadata]
-requires-dist = [{ name = "typed-rest", extras = ["fastapi"], editable = "." }]
-
-[[package]]
 name = "multidict"
 version = "6.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1142,11 +1131,22 @@ name = "typed-rest-example-simple"
 version = "0.1.0"
 source = { virtual = "examples/simple" }
 dependencies = [
-    { name = "typed-rest", extra = ["fastapi", "requests"] },
+    { name = "typed-rest", extra = ["aiohttp", "fastapi", "httpx", "requests", "urllib3"] },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "typed-rest", extras = ["fastapi", "requests"], editable = "." }]
+requires-dist = [{ name = "typed-rest", extras = ["fastapi", "requests", "aiohttp", "httpx", "urllib3"], editable = "." }]
+
+[[package]]
+name = "typed-rest-example-webapp"
+version = "0.1.0"
+source = { virtual = "examples/webapp" }
+dependencies = [
+    { name = "typed-rest", extra = ["fastapi"] },
+]
+
+[package.metadata]
+requires-dist = [{ name = "typed-rest", extras = ["fastapi"], editable = "." }]
 
 [[package]]
 name = "typer"
