@@ -485,6 +485,14 @@ class ApiClient:
         self, route: Route, transport: TransportFunction, is_async: bool | None = None
     ):
         def get_request(signature: inspect.Signature, *args, **kwargs) -> Request:
+            def header_name(pname: str, header: Header) -> str:
+                args = header.bound_args.arguments
+                if args.get("serialization_alias") is not None:
+                    return args["serialization_alias"]
+                if args.get("alias") is not None:
+                    return args["alias"]
+                return pname.replace("_", "-")
+
             try:
                 bound = signature.bind(*args, **kwargs)
             except TypeError as e:
@@ -520,7 +528,8 @@ class ApiClient:
                 elif isinstance(req_param, Header):
                     if headers is None:
                         headers = {}
-                    headers[pname] = value
+                    header_key = header_name(pname, req_param)
+                    headers[header_key] = value
             return Request(
                 route.method,
                 path,
