@@ -288,7 +288,7 @@ def convert_annotations_to_fastapi(
                 elif isinstance(arg, Query):
                     new_args.append(fastapi.Query(**args))
                 elif isinstance(arg, Header):
-                    new_args.append(fastapi.Query(**args, convert_underscores=True))
+                    new_args.append(fastapi.Header(**args, convert_underscores=True))
                 elif isinstance(arg, Body):
                     new_args.append(
                         fastapi.Body(**args, embed=False, media_type="application/json")
@@ -907,6 +907,7 @@ class ApiClient:
                     body=body,
                     headers=headers,
                     response=response,
+                    response_text=response.text,
                 ) from e
 
             try:
