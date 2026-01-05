@@ -393,6 +393,7 @@ class ApiImplementation:
 class ApiClientEngine(StrEnum):
     AIOHTTP = "aiohttp"
     HTTPX = "httpx"
+    PYSCRIPT = ("pyscript",)
     REQUESTS = "requests"
     URLLIB3 = "urllib3"
     TESTCLIENT = "testclient"
@@ -441,6 +442,10 @@ class ApiClient:
                 def dummy(*, base_url: str, session: aiohttp.ClientSession) -> None: ...
 
             case ApiClientEngine.HTTPX:
+
+                def dummy(*, base_url: str) -> None: ...
+
+            case ApiClientEngine.PYSCRIPT:
 
                 def dummy(*, base_url: str) -> None: ...
 
@@ -656,6 +661,49 @@ class ApiClient:
 
         self._add_accessor(route, transport, is_async=False)
 
+    def _add_accessor_with_pyscript(self, route: Route):
+        import json
+        from urllib.parse import urlencode
+
+        import pyscript
+
+        async def transport(
+            request: Request,
+        ):
+            url = self.base_url.rstrip("/") + request.path
+            if request.query_params is not None:
+                url += "?" + urlencode(request.query_params)
+            fetch_args = {"url": url, "method": request.method}
+            if request.query_params is not None:
+                fetch_args["params"] = request.query_params
+            if request.body is not None:
+                fetch_args["body"] = request.body
+            if request.headers is not None:
+                fetch_args["headers"] = request.headers
+            try:
+                response = await pyscript.fetch(**fetch_args)
+            except Exception as e:
+                raise NetworkError(
+                    route,
+                    fetch_args=fetch_args,
+                ) from e
+            if not response.ok:
+                raise HttpError(
+                    route,
+                    fetch_args=fetch_args,
+                    response=response,
+                )
+            try:
+                return await response.json()
+            except json.JSONDecodeError as e:
+                raise DecodeError(
+                    route,
+                    fetch_args=fetch_args,
+                    response=response,
+                ) from e
+
+        self._add_accessor(route, transport, is_async=True)
+
     def _add_accessor_with_requests(self, route: Route):
         import requests
 
@@ -848,6 +896,9 @@ class ApiClient:
             case ApiClientEngine.HTTPX:
                 self.base_url = bound.arguments["base_url"]
 
+            case ApiClientEngine.PYSCRIPT:
+                self.base_url = bound.arguments["base_url"]
+
             case ApiClientEngine.REQUESTS:
                 self.base_url = bound.arguments["base_url"]
 
@@ -877,6 +928,8 @@ class ApiClient:
                     self._add_accessor_with_aiohttp(route)
                 case ApiClientEngine.HTTPX:
                     self._add_accessor_with_httpx(route)
+                case ApiClientEngine.PYSCRIPT:
+                    self._add_accessor_with_pyscript(route)
                 case ApiClientEngine.REQUESTS:
                     self._add_accessor_with_requests(route)
                 case ApiClientEngine.URLLIB3:
