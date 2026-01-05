@@ -394,6 +394,7 @@ class ApiClientEngine(StrEnum):
     AIOHTTP = "aiohttp"
     HTTPX = "httpx"
     REQUESTS = "requests"
+    URLLIB3 = "urllib3"
     TESTCLIENT = "testclient"
     CUSTOM = "custom"
 
@@ -444,6 +445,10 @@ class ApiClient:
                 def dummy(*, base_url: str) -> None: ...
 
             case ApiClientEngine.REQUESTS:
+
+                def dummy(*, base_url: str) -> None: ...
+
+            case ApiClientEngine.URLLIB3:
 
                 def dummy(*, base_url: str) -> None: ...
 
@@ -706,6 +711,59 @@ class ApiClient:
 
         self._add_accessor(route, transport, is_async=False)
 
+    def _add_accessor_with_urllib3(self, route: Route):
+        import json
+        from urllib.parse import urlencode
+
+        import urllib3
+
+        def transport(
+            request: Request,
+        ):
+            method = request.method
+            path = request.path
+            body = request.body
+            headers = request.headers
+            url = self.base_url.rstrip("/") + path
+            if request.query_params is not None:
+                url += "?" + urlencode(request.query_params)
+            try:
+                response = urllib3.request(
+                    method=method,
+                    url=url,
+                    json=body,
+                    headers=headers,
+                )
+            except urllib3.exceptions.HTTPError as e:
+                raise NetworkError(
+                    route,
+                    url=url,
+                    body=body,
+                    headers=headers,
+                ) from e
+
+            if response.status >= 400:
+                raise HttpError(
+                    route,
+                    url=url,
+                    body=body,
+                    headers=headers,
+                    response=response,
+                )
+
+            try:
+                return response.json()
+            except json.JSONDecodeError as e:
+                raise DecodeError(
+                    route,
+                    url=url,
+                    body=body,
+                    headers=headers,
+                    response=response,
+                ) from e
+
+        self._add_accessor(route, transport, is_async=False)
+
     def _add_accessor_with_testclient(self, route: Route):
         import json
 
@@ -793,6 +851,9 @@ class ApiClient:
             case ApiClientEngine.REQUESTS:
                 self.base_url = bound.arguments["base_url"]
 
+            case ApiClientEngine.URLLIB3:
+                self.base_url = bound.arguments["base_url"]
+
             case ApiClientEngine.TESTCLIENT:
                 from fastapi.testclient import TestClient
 
@@ -818,6 +879,8 @@ class ApiClient:
                     self._add_accessor_with_httpx(route)
                 case ApiClientEngine.REQUESTS:
                     self._add_accessor_with_requests(route)
+                case ApiClientEngine.URLLIB3:
+                    self._add_accessor_with_urllib3(route)
                 case ApiClientEngine.TESTCLIENT:
                     self._add_accessor_with_testclient(route)
                 case ApiClientEngine.CUSTOM:

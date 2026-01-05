@@ -27,6 +27,9 @@ aiohttp = [
 httpx = [
     "httpx>=0.28.1",
 ]
+urllib3 = [
+    "urllib3>=2.6.2",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]

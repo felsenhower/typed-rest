@@ -1079,14 +1079,14 @@ source = { virtual = "tests" }
 dependencies = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
-    { name = "typed-rest", extra = ["aiohttp", "fastapi", "requests"] },
+    { name = "typed-rest", extra = ["aiohttp", "fastapi", "httpx", "requests", "urllib3"] },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-asyncio", specifier = ">=1.3.0" },
-    { name = "typed-rest", extras = ["fastapi", "requests", "aiohttp"], editable = "." },
+    { name = "typed-rest", extras = ["fastapi", "requests", "aiohttp", "httpx", "urllib3"], editable = "." },
 ]
 
 [[package]]
@@ -1110,6 +1110,9 @@ httpx = [
 requests = [
     { name = "requests" },
 ]
+urllib3 = [
+    { name = "urllib3" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -1118,8 +1121,9 @@ requires-dist = [
     { name = "httpx", marker = "extra == 'httpx'", specifier = ">=0.28.1" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "requests", marker = "extra == 'requests'", specifier = ">=2.32.5" },
+    { name = "urllib3", marker = "extra == 'urllib3'", specifier = ">=2.6.2" },
 ]
-provides-extras = ["fastapi", "requests", "aiohttp", "httpx"]
+provides-extras = ["fastapi", "requests", "aiohttp", "httpx", "urllib3"]
 
 [[package]]
 name = "typed-rest-example-requests"
