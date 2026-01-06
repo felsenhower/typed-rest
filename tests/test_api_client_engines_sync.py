@@ -1,5 +1,5 @@
 import pytest
-from typed_rest import ApiClient, ApiDefinition, NetworkError
+from rest_rpc import ApiClient, ApiDefinition, NetworkError
 
 
 @pytest.mark.parametrize("engine", ["requests", "httpx", "urllib3"])

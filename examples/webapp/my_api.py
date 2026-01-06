@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from typed_rest import ApiDefinition, Query
+from rest_rpc import ApiDefinition, Query
 
 api_def = ApiDefinition()
 

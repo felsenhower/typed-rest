@@ -2,7 +2,7 @@ from typing import Annotated
 
 import pytest
 from pydantic import BaseModel
-from typed_rest import ApiDefinition, Body, Query
+from rest_rpc import ApiDefinition, Body, Query
 
 
 class Item(BaseModel):

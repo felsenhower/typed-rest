@@ -1,4 +1,4 @@
-from typed_rest import ApiImplementation
+from rest_rpc import ApiImplementation
 
 from my_api import api_def
 

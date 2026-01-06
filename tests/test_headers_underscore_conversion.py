@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from typed_rest import ApiClient, ApiClientEngine, ApiDefinition, Header
+from rest_rpc import ApiClient, ApiClientEngine, ApiDefinition, Header
 
 
 def test_header_underscore_conversion():
@@ -10,7 +10,7 @@ def test_header_underscore_conversion():
     def read_headers(x_token: Annotated[str, Header()]) -> str:
         return x_token
 
-    from typed_rest import ApiImplementation
+    from rest_rpc import ApiImplementation
 
     impl = ApiImplementation(api)
 

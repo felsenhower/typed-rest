@@ -1,5 +1,5 @@
 [project]
-name = "typed-rest"
+name = "rest-rpc"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-typed-rest = "typed_rest:main"
+rest-rpc = "rest_rpc:main"
 
 [project.optional-dependencies]
 fastapi = [

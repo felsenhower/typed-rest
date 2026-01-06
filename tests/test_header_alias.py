@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from typed_rest import ApiClient, ApiClientEngine, ApiDefinition, Header
+from rest_rpc import ApiClient, ApiClientEngine, ApiDefinition, Header
 
 
 def test_header_alias():
@@ -10,7 +10,7 @@ def test_header_alias():
     def alias_header(token: Annotated[str, Header(alias="X-Auth-Token")]) -> str:
         return token
 
-    from typed_rest import ApiImplementation
+    from rest_rpc import ApiImplementation
 
     impl = ApiImplementation(api)
 

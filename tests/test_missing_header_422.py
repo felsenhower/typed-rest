@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import pytest
-from typed_rest import ApiClient, ApiClientEngine, ApiDefinition, Header
+from rest_rpc import ApiClient, ApiClientEngine, ApiDefinition, Header
 
 
 def test_missing_required_header_results_in_http_error():
@@ -11,7 +11,7 @@ def test_missing_required_header_results_in_http_error():
     def need_header(h: Annotated[str, Header()]) -> str:
         return h
 
-    from typed_rest import ApiImplementation
+    from rest_rpc import ApiImplementation
 
     impl = ApiImplementation(api)
 

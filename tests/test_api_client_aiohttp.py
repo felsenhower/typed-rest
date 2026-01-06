@@ -1,7 +1,7 @@
 import aiohttp
 import fastapi
 import pytest
-from typed_rest import (
+from rest_rpc import (
     ApiClient,
     ApiDefinition,
     ApiImplementation,

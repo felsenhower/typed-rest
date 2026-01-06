@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typed_rest import ApiClient
+from rest_rpc import ApiClient
 
 from my_api import api_def
 

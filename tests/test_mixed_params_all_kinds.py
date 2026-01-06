@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from typed_rest import (
+from rest_rpc import (
     ApiClient,
     ApiClientEngine,
     ApiDefinition,
@@ -23,7 +23,7 @@ def test_all_param_kinds_together():
     ) -> dict:
         return {"item_id": item_id, "q": q, "h": h, **body}
 
-    from typed_rest import ApiImplementation
+    from rest_rpc import ApiImplementation
 
     impl = ApiImplementation(api)
 

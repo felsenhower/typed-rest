@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 import aiohttp
 import uvicorn
-from typed_rest import ApiClient, ApiDefinition, ApiImplementation
+from rest_rpc import ApiClient, ApiDefinition, ApiImplementation
 
 
 def _get_free_port() -> int:

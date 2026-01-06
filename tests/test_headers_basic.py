@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from typed_rest import ApiClient, ApiClientEngine, ApiDefinition, Header
+from rest_rpc import ApiClient, ApiClientEngine, ApiDefinition, Header
 
 
 def test_single_header_roundtrip():
@@ -10,7 +10,7 @@ def test_single_header_roundtrip():
     def ping(h: Annotated[str, Header()]) -> str:
         return h
 
-    from typed_rest import ApiImplementation
+    from rest_rpc import ApiImplementation
 
     impl = ApiImplementation(api)
 

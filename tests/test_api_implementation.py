@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import pytest
-from typed_rest import ApiDefinition, ApiImplementation, Query
+from rest_rpc import ApiDefinition, ApiImplementation, Query
 
 
 def make_api():

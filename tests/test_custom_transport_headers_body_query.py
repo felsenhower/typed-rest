@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from typed_rest import (
+from rest_rpc import (
     ApiClient,
     ApiClientEngine,
     ApiDefinition,

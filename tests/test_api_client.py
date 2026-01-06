@@ -3,7 +3,7 @@ from typing import Annotated, Any
 import fastapi
 import pytest
 from pydantic import BaseModel
-from typed_rest import (
+from rest_rpc import (
     ApiClient,
     ApiDefinition,
     ApiImplementation,

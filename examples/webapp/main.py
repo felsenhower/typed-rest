@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from typed_rest import ApiImplementation
+from rest_rpc import ApiImplementation
 
 from my_api import api_def
 

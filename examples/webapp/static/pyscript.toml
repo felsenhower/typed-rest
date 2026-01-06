@@ -1,5 +1,5 @@
 packages = ["pydantic"]
 
 [files]
-"./typed_rest/__init__.py" = "./typed_rest/__init__.py"
+"./rest_rpc/__init__.py" = "./rest_rpc/__init__.py"
 "./my_api.py" = ""

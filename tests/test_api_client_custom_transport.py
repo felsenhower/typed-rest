@@ -1,5 +1,5 @@
 import fastapi.testclient
-from typed_rest import ApiClient, ApiDefinition, ApiImplementation, Request
+from rest_rpc import ApiClient, ApiDefinition, ApiImplementation, Request
 
 
 def test_custom_sync_transport():

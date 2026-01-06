@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import pytest
-from typed_rest import ApiClient, ApiClientEngine, ApiDefinition, Query
+from rest_rpc import ApiClient, ApiClientEngine, ApiDefinition, Query
 
 
 def test_client_type_validation_error():
@@ -11,7 +11,7 @@ def test_client_type_validation_error():
     def read_number(x: Annotated[int, Query()]) -> int:
         return x
 
-    from typed_rest import ApiImplementation
+    from rest_rpc import ApiImplementation
 
     impl = ApiImplementation(api)
 

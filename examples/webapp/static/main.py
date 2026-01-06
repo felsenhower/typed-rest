@@ -2,7 +2,7 @@ import pyodide
 from pyscript import document, window
 
 from my_api import api_def
-from typed_rest import ApiClient, CommunicationError
+from rest_rpc import ApiClient, CommunicationError
 
 api_client = ApiClient(api_def, engine="pyscript", base_url="/api/")
 
