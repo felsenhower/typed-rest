@@ -1,7 +1,7 @@
 [project]
 name = "rest-rpc-example-simple"
 version = "0.1.1"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "rest-rpc[fastapi,requests,aiohttp,httpx,urllib3]>=0.1.0",
 ]

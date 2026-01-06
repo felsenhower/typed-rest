@@ -8,7 +8,7 @@ readme = { file = "README-pypi.md", content-type = "text/markdown" }
 authors = [
     { name = "Ruben Felgenhauer", email = "Ruben.Felgenhauer@posteo.de" }
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.12.5",
 ]
