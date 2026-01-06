@@ -52,7 +52,7 @@ def read_root() -> dict[str, str]: ...
 
 <a id="rest_rpc.api_definition.ApiDefinition.route"></a>
 
-#### route
+### route
 
 ```python
 def route(method: str, path: str)
@@ -88,7 +88,7 @@ def read_item(item_id: int) -> dict[str, Any]: ...
 
 <a id="rest_rpc.api_definition.ApiDefinition.delete"></a>
 
-#### delete
+### delete
 
 ```python
 def delete(path: str)
@@ -106,7 +106,7 @@ def route() -> dict[str,Any]: ...
 
 <a id="rest_rpc.api_definition.ApiDefinition.get"></a>
 
-#### get
+### get
 
 ```python
 def get(path: str)
@@ -124,7 +124,7 @@ def route() -> dict[str,Any]: ...
 
 <a id="rest_rpc.api_definition.ApiDefinition.patch"></a>
 
-#### patch
+### patch
 
 ```python
 def patch(path: str)
@@ -142,7 +142,7 @@ def route() -> dict[str,Any]: ...
 
 <a id="rest_rpc.api_definition.ApiDefinition.post"></a>
 
-#### post
+### post
 
 ```python
 def post(path: str)
@@ -160,7 +160,7 @@ def route() -> dict[str,Any]: ...
 
 <a id="rest_rpc.api_definition.ApiDefinition.put"></a>
 
-#### put
+### put
 
 ```python
 def put(path: str)
@@ -327,7 +327,7 @@ def read_root():
 
 <a id="rest_rpc.api_implementation.ApiImplementation.handler"></a>
 
-#### handler
+### handler
 
 ```python
 def handler(func)
@@ -354,7 +354,7 @@ def read_root():
 
 <a id="rest_rpc.api_implementation.ApiImplementation.make_fastapi"></a>
 
-#### make\_fastapi
+### make\_fastapi
 
 ```python
 def make_fastapi()

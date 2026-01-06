@@ -3,5 +3,5 @@
 To update the `docs.md` file, run:
 
 ```shell
-$ uv run pydoc-markdown
+$ uv run pydoc-markdown | sed 's/####/###/g' > docs.md
 ```
