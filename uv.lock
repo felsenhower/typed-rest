@@ -2340,7 +2340,7 @@ wheels = [
 
 [[package]]
 name = "rest-rpc"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
@@ -2376,7 +2376,7 @@ provides-extras = ["fastapi", "requests", "aiohttp", "httpx", "urllib3"]
 
 [[package]]
 name = "rest-rpc-benchmark"
-version = "0.1.0"
+version = "0.1.1"
 source = { virtual = "benchmark" }
 dependencies = [
     { name = "matplotlib" },
@@ -2391,7 +2391,7 @@ requires-dist = [
 
 [[package]]
 name = "rest-rpc-docs"
-version = "0.1.0"
+version = "0.1.1"
 source = { virtual = "docs" }
 dependencies = [
     { name = "pydoc-markdown" },
@@ -2406,7 +2406,7 @@ requires-dist = [
 
 [[package]]
 name = "rest-rpc-example-simple"
-version = "0.1.0"
+version = "0.1.1"
 source = { virtual = "examples/simple" }
 dependencies = [
     { name = "rest-rpc", extra = ["aiohttp", "fastapi", "httpx", "requests", "urllib3"] },
@@ -2417,7 +2417,7 @@ requires-dist = [{ name = "rest-rpc", extras = ["fastapi", "requests", "aiohttp"
 
 [[package]]
 name = "rest-rpc-example-upgraded"
-version = "0.1.0"
+version = "0.1.1"
 source = { virtual = "examples/upgraded" }
 dependencies = [
     { name = "rest-rpc", extra = ["aiohttp", "fastapi", "httpx", "requests", "urllib3"] },
@@ -2428,7 +2428,7 @@ requires-dist = [{ name = "rest-rpc", extras = ["fastapi", "requests", "aiohttp"
 
 [[package]]
 name = "rest-rpc-example-webapp"
-version = "0.1.0"
+version = "0.1.1"
 source = { virtual = "examples/webapp" }
 dependencies = [
     { name = "rest-rpc", extra = ["fastapi"] },
@@ -2439,7 +2439,7 @@ requires-dist = [{ name = "rest-rpc", extras = ["fastapi"], editable = "." }]
 
 [[package]]
 name = "rest-rpc-tests"
-version = "0.1.0"
+version = "0.1.1"
 source = { virtual = "tests" }
 dependencies = [
     { name = "pytest" },
