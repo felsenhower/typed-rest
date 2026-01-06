@@ -1,7 +1,7 @@
 [project]
 name = "rest-rpc"
 version = "0.1.0"
-description = "Add your description here"
+description = "A Python library that makes type-checked REST APIs easy"
 readme = "README.md"
 authors = [
     { name = "Ruben Felgenhauer", email = "Ruben.Felgenhauer@posteo.de" }
@@ -10,9 +10,6 @@ requires-python = ">=3.13"
 dependencies = [
     "pydantic>=2.12.5",
 ]
-
-[project.scripts]
-rest-rpc = "rest_rpc:main"
 
 [project.optional-dependencies]
 fastapi = [
