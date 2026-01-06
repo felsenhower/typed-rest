@@ -2,6 +2,8 @@
 name = "rest-rpc"
 version = "0.1.0"
 description = "A Python library that makes type-checked REST APIs easy"
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 authors = [
     { name = "Ruben Felgenhauer", email = "Ruben.Felgenhauer@posteo.de" }
@@ -39,3 +41,9 @@ members = [
     "benchmark",
     "docs",
 ]
+
+[project.urls]
+"Source" = "https://github.com/felsenhower/rest-rpc"
+"Documentation" = "https://github.com/felsenhower/rest-rpc/blob/main/docs/docs.md"
+"Issue tracker" = "https://github.com/felsenhower/rest-rpc/issues"
+
