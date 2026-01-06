@@ -1,6 +1,6 @@
 [project]
 name = "rest-rpc"
-version = "0.1.1"
+version = "0.1.2"
 description = "A Python library that makes type-checked REST APIs easy"
 license = "MIT"
 license-files = ["LICENSE"]
