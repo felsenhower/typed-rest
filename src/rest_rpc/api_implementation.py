@@ -1,3 +1,5 @@
+"""API implementation via FastAPI."""
+
 import inspect
 from collections.abc import Callable
 from typing import Annotated, assert_never, get_args, get_origin
@@ -91,6 +93,24 @@ def convert_annotations_to_fastapi(
 
 
 class ApiImplementation:
+    """Class for API implementation via FastAPI.
+
+    Args:
+        api_def (ApiDefinition): The [`ApiDefinition`](#rest_rpc.api_definition.ApiDefinition) instance to base the
+            implementation on. The constructed `ApiImplementation` instance must add a handler to all routes that have
+            been defined in `api_def`. Otherwise, it won't be possible to generate a FastAPI app.
+
+    Example:
+
+    ```python
+    api_impl = ApiImplementation(api_def)
+
+    @api_impl.handler
+    def read_root():
+        return {"Hello": "World"}
+    ```
+    """
+
     def __init__(self, api_def: ApiDefinition):
         from fastapi import FastAPI  # noqa # pylint: disable=unused-import
 
@@ -98,6 +118,22 @@ class ApiImplementation:
         self.handlers: dict[str, Callable] = dict()
 
     def handler(self, func):
+        """Decorator for route handlers. All routes defined in the
+            [`ApiDefinition`](#rest_rpc.api_definition.ApiDefinition) instance that was passed to the constructor must
+            be implemented through this decorator.
+
+        Example:
+
+        ```python
+        @api_impl.handler
+        def read_root():
+            return {"Hello": "World"}
+        ```
+
+        Raises:
+            ValueError: When trying to add a duplicate handler, a handler that doesn't exist in the api defintion,
+                when adding a non-matching annotation or default value.
+        """
         name = func.__name__
         if name in self.handlers:
             raise ValueError(f'Unable to add duplicate handler "{name}".')
@@ -151,16 +187,27 @@ class ApiImplementation:
         return func
 
     def make_fastapi(self):
+        """Generate a FastAPI app.
+
+        Raises:
+            ValueError: When not all route definitions have a corresponding handler.
+
+        Returns:
+            FastAPI: a FastAPI instance.
+        """
         from fastapi import FastAPI
 
         if set(self.api_def.routes.keys()) != set(self.handlers.keys()):
+            # `pydoc-markdown` fails without the backslashes (sigh).
+            # fmt: off
             raise ValueError(
-                f"Unable to generate FastAPI app. ApiImplementation is missing handlers for the following routes: {
-                    tuple(
-                        set(self.api_def.routes.keys()).difference(self.handlers.keys())
-                    )
+                f"Unable to generate FastAPI app. ApiImplementation is missing handlers for the following routes: { \
+                    tuple( \
+                        set(self.api_def.routes.keys()).difference(self.handlers.keys()) \
+                    ) \
                 }"
             )
+            # fmt: on
 
         app = FastAPI()
         for name, route_def in self.api_def.routes.items():

@@ -15,6 +15,9 @@ REST-RPC is for you, if you:
 
 ## Usage
 
+> [!TIP]
+> Go right to the [documentation](docs/docs.md)
+
 ### Installation
 
 To install `rest-rpc` for back-end use, run:
@@ -336,38 +339,39 @@ Another important note: In the API implementation, you don't need to add any ann
 
 ```python
 @api_def.get("/foo")
-def foo(bar: int = 42) -> dict[str, Any]: ...
+def foo(bar: int = 42, baz: Annotated[str | None, Query()] = None) -> dict[str, Any]: ...
 
 # [...]
 
 @api_impl.handler
-def foo(bar):
-    return {"foo": bar}
+def foo(bar, baz):
+    return {"bar": bar, "baz": baz}
 ```
 
-However, if you _decide_ to add annotations or default values, they _do_ have to match exactly, so these are all okay:
+However, if you _decide_ to add annotations or default values, they _do_ have to match exactly (except for `Annotated[]`, where you must use the first argument instead), so these are all okay:
 
 ```python
 @api_impl.handler
-def foo(bar: int):
-    return {"foo": bar}
+def foo(bar: int, baz: str | None):
+    return {"bar": bar, "baz": baz}
     
 @api_impl.handler
-def foo(bar: int = 42):
-    return {"foo": bar}
+def foo(bar: int = 42, baz: str | None = None):
+    return {"bar": bar, "baz": baz}
 ```
 
 But these are not:
 
 ```python
 @api_impl.handler
-def foo(bar: float):
-    return {"foo": bar}
+def foo(bar: float, baz: int):
+    return {"bar": bar, "baz": baz}
     
 @api_impl.handler
-def foo(bar = 0):
-    return {"foo": bar}
+def foo(bar = 0, baz = "Baz"):
+    return {"bar": bar, "baz": baz}
 ```
+
 
 > [!TIP]
 > Personal recommendation: Keep it simple in the prototyping phase since things are likely to be changed around and you'll be annoyed by changing the signatures in two places instead of one. Once the API definition becomes stable, you can still add the annotations to the API implementation to improve expressivity.
@@ -386,5 +390,4 @@ So it's probably a good idea to use `requests` or `urllib3` if you want synchron
 
 - Support for authentication. At the moment, you can only do this via middlewares in the backend implementation.
 - Support parameters in `ApiImplementation.make_fastapi()` that are forwarded to the `FastAPI()` constructor.
-- Make argument annotation matching more lax (e.g. when we annotate `Annotated[int, Path()]` in the definition, it should be okay to just annotate `int` in the handler).
 - Missing something? Create an issue.

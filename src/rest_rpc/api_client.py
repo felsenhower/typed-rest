@@ -1,3 +1,5 @@
+"""Api Client."""
+
 import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -24,26 +26,42 @@ class ApiClientEngine(StrEnum):
 
 
 class CommunicationError(IOError):
+    """Base class for errors that can happen in route accessors."""
+
     def __init__(self, route: Route, **kwargs):
         super().__init__(
             f'{self.__class__.__name__} while accessing route "{route.name}" ({kwargs}).'
         )
 
 
-class NetworkError(CommunicationError): ...
+class NetworkError(CommunicationError):
+    """An error that signifies that something network-related went wrong during a request."""
+
+    pass
 
 
-class HttpError(CommunicationError): ...
+class HttpError(CommunicationError):
+    """An error that signifies that the server replied with a status code that indicates an error (>= 400)."""
+
+    pass
 
 
-class DecodeError(CommunicationError): ...
+class DecodeError(CommunicationError):
+    """An error that signifies that the server did not send valid JSON data back."""
+
+    pass
 
 
-class ValidationError(CommunicationError): ...
+class ValidationError(CommunicationError):
+    """An error that signifies that the server did not send data back that can be deserialized into the desired type."""
+
+    pass
 
 
 @dataclass
 class Request:
+    """A description of an HTTP request."""
+
     method: str
     path: str
     query_params: dict | None
@@ -51,10 +69,26 @@ class Request:
     headers: dict | None
 
 
-TransportFunction = Callable[[Request], object]
-
-
 class ApiClient:
+    """Class for API clients.
+
+    Args:
+        api_def (ApiDefinition): The [`ApiDefinition`](#rest_rpc.api_definition.ApiDefinition) instance to generate the
+            client for. For each route in the `ApiDefinition` instance, an accessor function with the same name will be
+            generated.
+        engine (str): The engine to use. Valid values are `"aiohttp"`, `"httpx"`, `"pyodide"`, `"pyscript"`,
+            `"requests"`, `"urllib3"`, `"testclient"`, and `"custom"`. This determines which HTTP library is used
+            internally.
+        app (fastapi.FastAPI, optional): Required iff engine is `"testclient"`. FastAPI app to make requests on.
+        base_url (str, optional): Required iff engine is one of `("aiohttp", "httpx", "pyodide", "pyscript",
+            "requests", "urllib3")`. This is the base URL that is prepended to the route paths.
+        is_async (bool | None, optional): When engine is `"custom"`, explicitly state if `transport` is as `async`
+            function (`True`, `False`) or let the library decide (`None`). Defaults to `None`.
+        session (aiohttp.ClientSession, optional): Required iff engine is `"aiohttp"`.
+        transport (Callable[[Request], object], optional): Required iff engine is `"custom"`. Transport function to
+            use for requests.
+    """
+
     @staticmethod
     def _get_init_signature(engine: ApiClientEngine):
         dummy = None
@@ -95,7 +129,9 @@ class ApiClient:
             case ApiClientEngine.CUSTOM:
 
                 def dummy(
-                    *, transport: TransportFunction, is_async: bool | None = None
+                    *,
+                    transport: Callable[[Request], object],
+                    is_async: bool | None = None,
                 ) -> None: ...
 
             case _:
@@ -104,7 +140,10 @@ class ApiClient:
         return inspect.signature(dummy)
 
     def _add_accessor(
-        self, route: Route, transport: TransportFunction, is_async: bool | None = None
+        self,
+        route: Route,
+        transport: Callable[[Request], object],
+        is_async: bool | None = None,
     ):
         def get_request(signature: inspect.Signature, *args, **kwargs) -> Request:
             def header_name(pname: str, header: Header) -> str:

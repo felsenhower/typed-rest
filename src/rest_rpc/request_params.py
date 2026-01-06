@@ -1,3 +1,5 @@
+"""Helper classes for `Annotated` and API definition."""
+
 import inspect
 from typing import Any, Optional, Union
 
@@ -15,6 +17,27 @@ class ParamExample(TypedDict, total=False):
 
 
 class RequestParam:
+    """Base class for the #Path, #Query, #Body and #Header classes which mirror the corresponding Request Parameter
+    classes from FastAPI which are documented in the [FastAPI reference](https://fastapi.tiangolo.com/reference/parameters/).
+
+    The REST-RPC versions intentionally support less parameters than the FastAPI versions in order to not support
+    deprecated, superseded or non-applicable concepts.
+
+    In the back-end, the classes are mapped to FastAPI's versions. Please refer to the FastAPI documentation to find out
+    what the parameters do. The following parameters are supported:
+    - `alias`
+    - `alias_priority`
+    - `validation_alias`
+    - `serialization_alias`
+    - `title`
+    - `description`
+    - `examples`
+    - `openapi_examples`
+    - `deprecated`
+    - `include_in_schema`
+    - `json_schema_extra`
+    """
+
     def __init__(self, *args, **kwargs):
         def f(
             *,
@@ -36,13 +59,66 @@ class RequestParam:
         self.bound_args = signature.bind(*args, **kwargs)
 
 
-class Path(RequestParam): ...
+class Path(RequestParam):
+    """REST-RPC analogue to FastAPI's `Path()`. Refer to #RequestParam for more information.
+
+    Note: It's optional to annotate path parameters in REST-RPC.
+
+    Example:
+
+    ```python
+    @api_def.get("/foo")
+    def foo(bar: Annotated[int, Path()]) -> dict[str, Any]: ...
+    ```
+    """
+
+    pass
 
 
-class Query(RequestParam): ...
+class Query(RequestParam):
+    """REST-RPC analogue to FastAPI's `Query()`. Refer to #RequestParam for more information.
+
+    Note: Query parameters must be annotated in REST-RPC.
+
+    Example:
+
+    ```python
+    @api_def.get("/foo")
+    def foo(bar: Annotated[int, Query()]) -> dict[str, Any]: ...
+    ```
+    """
+
+    pass
 
 
-class Body(RequestParam): ...
+class Body(RequestParam):
+    """REST-RPC analogue to FastAPI's `Body()`. Refer to #RequestParam for more information.
+
+    Note: Body parameters must be annotated in REST-RPC. Body parameters are only allowed on `PATCH`, `POST`, and `PUT`.
+    Only one Body parameter is allowed per route. FastAPI's `Body(embed=True)` is not supported.
+
+    Example:
+
+    ```python
+    @api_def.get("/foo")
+    def foo(bar: Annotated[SomeModel, Body()]) -> dict[str, Any]: ...
+    ```
+    """
+
+    pass
 
 
-class Header(RequestParam): ...
+class Header(RequestParam):
+    """REST-RPC analogue to FastAPI's `Header()`. Refer to #RequestParam for more information.
+
+    Note: Header parameters must be annotated in REST-RPC.
+
+    Example:
+
+    ```python
+    @api_def.get("/foo")
+    def foo(bar: Annotated[str, Header()]) -> dict[str, Any]: ...
+    ```
+    """
+
+    pass

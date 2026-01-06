@@ -1,3 +1,5 @@
+"""API definition."""
+
 import inspect
 import re
 from typing import Annotated, get_args, get_origin
@@ -72,10 +74,48 @@ def get_request_params(
 
 
 class ApiDefinition:
+    """Class for API definition. Put an instance of this class into a module that you import from both the back-end and
+    the front-end.
+
+    Example:
+
+    ```python
+    api_def = ApiDefinition()
+
+
+    @api_def.get("/")
+    def read_root() -> dict[str, str]: ...
+    ```
+    """
+
     def __init__(self):
         self.routes: dict[str, Route] = dict()
 
     def route(self, method: str, path: str):
+        """Decorator for route definitions.
+
+        Example:
+
+        ```python
+        @api_def.route("GET", "/")
+        def read_root() -> dict[str, str]: ...
+
+        @api_def.route("GET", "/items/{item_id}")
+        def read_item(item_id: int) -> dict[str, Any]: ...
+        ```
+
+        Args:
+            method (str): The HTTP method of the route. Supports `DELETE`, `GET`, `PATCH`, `POST`, and `PUT`. Only one
+                method is supported per route.
+
+            path (str): The path of the route. May contain path parameters like `{param}`. Must start with a `/`.
+
+        Raises:
+            ValueError: When trying to add a duplicated route, a route with an unsopported HTTP method, with an invalid
+                path, with missing or invalid annotations, or using more than one parameter annotated with
+                [`Body()`](#rest_rpc.request_params.Body).
+        """
+
         def route_decorator(func):
             EMPTY = inspect.Signature.empty
             name = func.__name__
@@ -148,16 +188,61 @@ class ApiDefinition:
         return route_decorator
 
     def delete(self, path: str):
+        """Shorthand for `@api_def.route(method="DELETE", path)`. See #route.
+
+        Example:
+
+        ```python
+        @api_def.delete("/foo")
+        def route() -> dict[str,Any]: ...
+        ```
+        """
         return self.route(method="DELETE", path=path)
 
     def get(self, path: str):
+        """Shorthand for `@api_def.route(method="GET", path)`. See #route.
+
+        Example:
+
+        ```python
+        @api_def.get("/foo")
+        def route() -> dict[str,Any]: ...
+        ```
+        """
         return self.route(method="GET", path=path)
 
     def patch(self, path: str):
+        """Shorthand for `@api_def.route(method="PATCH", path)`. See #route.
+
+        Example:
+
+        ```python
+        @api_def.patch("/foo")
+        def route() -> dict[str,Any]: ...
+        ```
+        """
         return self.route(method="PATCH", path=path)
 
     def post(self, path: str):
+        """Shorthand for `@api_def.route(method="POST", path)`. See #route.
+
+        Example:
+
+        ```python
+        @api_def.post("/foo")
+        def route() -> dict[str,Any]: ...
+        ```
+        """
         return self.route(method="POST", path=path)
 
     def put(self, path: str):
+        """Shorthand for `@api_def.route(method="PUT", path)`. See #route.
+
+        Example:
+
+        ```python
+        @api_def.put("/foo")
+        def route() -> dict[str,Any]: ...
+        ```
+        """
         return self.route(method="PUT", path=path)

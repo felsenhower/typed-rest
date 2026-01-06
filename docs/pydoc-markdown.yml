@@ -1,0 +1,20 @@
+loaders:
+  - type: python
+    search_path: [../src/]
+    modules: 
+      - rest_rpc
+      - rest_rpc.api_definition
+      - rest_rpc.request_params
+      - rest_rpc.api_implementation
+      - rest_rpc.api_client
+
+processors:
+  - type: filter
+    documented_only: true
+    expression: not name.startswith('_') and default()
+  - type: smart
+  - type: crossref
+    
+renderer:
+  type: markdown
+  filename: docs.md

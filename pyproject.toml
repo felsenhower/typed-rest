@@ -40,4 +40,5 @@ members = [
     "examples/*",
     "tests",
     "benchmark",
+    "docs",
 ]
